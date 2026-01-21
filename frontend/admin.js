@@ -158,6 +158,9 @@ const btnGuardarEditar = document.getElementById('btn-guardar-editar');
 const btnExportar = document.getElementById('btn-exportar');
 const btnExportarAsistencias = document.getElementById('btn-exportar-asistencias');
 
+// Botón de eliminar todos los usuarios
+const btnEliminarTodosUsuarios = document.getElementById('btn-eliminar-todos-usuarios');
+
 // Importación CSV
 const inputCsvFile = document.getElementById('input-csv-file');
 const btnImportarCsv = document.getElementById('btn-importar-csv');
@@ -1175,6 +1178,100 @@ btnConfirmarReinicio.addEventListener('click', async () => {
         btnConfirmarReinicio.disabled = false;
         btnCancelarReinicio.disabled = false;
         btnConfirmarReinicio.textContent = 'Sí, eliminar todas las asistencias';
+    }
+});
+
+// ============================================================================
+// ELIMINAR TODOS LOS USUARIOS
+// ============================================================================
+
+/**
+ * Elimina todos los usuarios autorizados
+ */
+async function eliminarTodosUsuarios() {
+    try {
+        const response = await fetchAutenticado(`${API_BASE_URL}/api/usuarios/eliminar-todos`, {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+        
+        const data = await response.json();
+        
+        if (!response.ok) {
+            throw new Error(data.mensaje || 'Error al eliminar usuarios');
+        }
+        
+        return data;
+        
+    } catch (error) {
+        console.error('Error al eliminar todos los usuarios:', error);
+        throw error;
+    }
+}
+
+/**
+ * Maneja el click en el botón de eliminar todos los usuarios
+ */
+btnEliminarTodosUsuarios.addEventListener('click', async () => {
+    // Confirmar acción
+    const confirmacion = confirm(
+        `⚠️ ¿Estás seguro que deseas eliminar TODOS los usuarios autorizados?\n\n` +
+        `Esta acción eliminará ${appState.usuarios.length} usuarios de forma permanente.\n\n` +
+        `Se recomienda exportar el CSV antes de continuar.`
+    );
+    
+    if (!confirmacion) {
+        return;
+    }
+    
+    // Segunda confirmación
+    const segundaConfirmacion = confirm(
+        `⚠️ ÚLTIMA CONFIRMACIÓN\n\n` +
+        `Esta acción NO se puede deshacer.\n\n` +
+        `¿Realmente deseas eliminar todos los usuarios?`
+    );
+    
+    if (!segundaConfirmacion) {
+        return;
+    }
+    
+    // Deshabilitar botón
+    btnEliminarTodosUsuarios.disabled = true;
+    btnEliminarTodosUsuarios.textContent = 'Eliminando...';
+    
+    limpiarMensajes();
+    
+    try {
+        // Eliminar todos los usuarios
+        const resultado = await eliminarTodosUsuarios();
+        
+        if (resultado.success) {
+            // Mostrar mensaje de éxito
+            mostrarMensaje(
+                'exito', 
+                resultado.mensaje, 
+                'Usuarios eliminados'
+            );
+            
+            // Recargar lista de usuarios
+            await cargarYMostrarUsuarios();
+        } else {
+            mostrarMensaje('error', resultado.mensaje, 'Error al eliminar');
+        }
+        
+    } catch (error) {
+        console.error('Error al eliminar todos los usuarios:', error);
+        mostrarMensaje(
+            'error', 
+            error.message || 'Error al eliminar los usuarios', 
+            'Error'
+        );
+    } finally {
+        // Rehabilitar botón
+        btnEliminarTodosUsuarios.disabled = false;
+        btnEliminarTodosUsuarios.textContent = '🗑️ Eliminar Todos los Usuarios';
     }
 });
 

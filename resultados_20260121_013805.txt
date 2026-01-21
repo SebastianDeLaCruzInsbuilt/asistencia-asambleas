@@ -1,0 +1,4 @@
+Exitosos: 500
+Fallidos: 0
+Tiempo: 25.52s
+

@@ -1,0 +1,11 @@
+REPORTE DE ASISTENCIAS CONFIRMADAS
+======================================================================
+
+Fecha: 2026-01-21 01:38:14
+Total de usuarios: 500
+Total de asistencias: 501
+
+LISTA DE ASISTENCIAS:
+----------------------------------------------------------------------
+Usuario ID      Documento       Nombre                         Timestamp
+----------------------------------------------------------------------

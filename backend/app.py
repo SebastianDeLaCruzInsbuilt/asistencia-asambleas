@@ -1757,6 +1757,45 @@ def eliminar_usuario(user_id):
         }), 500
 
 
+@app.route('/api/usuarios/eliminar-todos', methods=['DELETE'])
+@requiere_autenticacion
+def eliminar_todos_usuarios():
+    """
+    Endpoint DELETE /api/usuarios/eliminar-todos
+    
+    Elimina todos los usuarios de la lista de autorizados.
+    
+    Response:
+        {
+            "success": boolean,
+            "mensaje": "string",
+            "usuarios_eliminados": number
+        }
+    """
+    try:
+        # Contar usuarios antes de eliminar
+        total_usuarios = len(usuarios_cache)
+        
+        # Limpiar lista de usuarios
+        usuarios_cache.clear()
+        
+        # Guardar archivo CSV vacío (solo con headers)
+        guardar_usuarios_csv(usuarios_cache)
+        
+        return jsonify({
+            'success': True,
+            'mensaje': f'Se eliminaron {total_usuarios} usuarios exitosamente',
+            'usuarios_eliminados': total_usuarios
+        }), 200
+        
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'mensaje': f'Error del servidor: {str(e)}',
+            'usuarios_eliminados': 0
+        }), 500
+
+
 @app.route('/api/reload-usuarios', methods=['POST'])
 @requiere_autenticacion
 def endpoint_reload_usuarios():

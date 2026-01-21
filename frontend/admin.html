@@ -64,9 +64,25 @@
             border-collapse: collapse;
             margin-top: 20px;
         }
+        
+        /* Contenedor con scroll para tablas grandes */
+        .tabla-scroll-container {
+            max-height: 500px;
+            overflow-y: auto;
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius);
+            margin-top: 20px;
+        }
+        
+        .tabla-scroll-container table {
+            margin-top: 0;
+        }
 
         .tabla-usuarios thead {
             background: var(--color-bg);
+            position: sticky;
+            top: 0;
+            z-index: 10;
         }
 
         .tabla-usuarios th {
@@ -435,11 +451,16 @@
 
         <!-- Sección: Lista de Usuarios -->
         <div class="admin-section">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px;">
                 <h2 style="margin: 0;">Lista de Usuarios Autorizados</h2>
-                <button id="btn-exportar" class="btn-exportar">
-                    Exportar Usuarios a CSV
-                </button>
+                <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                    <button id="btn-eliminar-todos-usuarios" class="btn-eliminar" style="background: #dc2626;">
+                        🗑️ Eliminar Todos los Usuarios
+                    </button>
+                    <button id="btn-exportar" class="btn-exportar">
+                        📥 Exportar Usuarios a CSV
+                    </button>
+                </div>
             </div>
 
             <!-- Indicador de carga -->
@@ -448,8 +469,8 @@
                 <p>Cargando usuarios...</p>
             </div>
 
-            <!-- Tabla de usuarios -->
-            <div id="contenedor-tabla">
+            <!-- Tabla de usuarios con scroll -->
+            <div class="tabla-scroll-container" id="contenedor-tabla">
                 <table class="tabla-usuarios" id="tabla-usuarios">
                     <thead>
                         <tr>
@@ -503,8 +524,8 @@
                 <p>Cargando asistencias...</p>
             </div>
 
-            <!-- Tabla de asistencias -->
-            <div id="contenedor-tabla-asistencias">
+            <!-- Tabla de asistencias con scroll -->
+            <div class="tabla-scroll-container" id="contenedor-tabla-asistencias">
                 <table class="tabla-usuarios" id="tabla-asistencias">
                     <thead>
                         <tr>

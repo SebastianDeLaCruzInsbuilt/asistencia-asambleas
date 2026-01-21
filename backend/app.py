@@ -1877,15 +1877,19 @@ def exportar_asistencias_csv():
         }), 500
 
 
+# Inicializar datos al importar el módulo (necesario para Gunicorn)
+print("\n" + "="*60)
+print("Sistema de Confirmación de Asistencia a Asambleas")
+print("="*60 + "\n")
+
+inicializar_datos()
+
+print("\n" + "="*60)
+
+
 if __name__ == '__main__':
-    print("\n" + "="*60)
-    print("Sistema de Confirmación de Asistencia a Asambleas")
-    print("="*60 + "\n")
-    
-    # Inicializar datos
-    inicializar_datos()
-    
-    print("\n" + "="*60)
+    print("\nIniciando servidor de desarrollo...")
+    print("="*60)
     
     # Determinar si usar SSL
     ssl_enabled = os.environ.get('SSL_ENABLED', 'false').lower() == 'true'

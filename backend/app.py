@@ -1882,9 +1882,18 @@ print("\n" + "="*60)
 print("Sistema de Confirmación de Asistencia a Asambleas")
 print("="*60 + "\n")
 
+# Debug: Mostrar información del entorno
+print(f"Python version: {os.sys.version}")
+print(f"Working directory: {os.getcwd()}")
+print(f"PORT env var: {os.environ.get('PORT', 'NOT SET')}")
+print(f"Files in current dir: {os.listdir('.')[:10]}")
+print("")
+
 inicializar_datos()
 
 print("\n" + "="*60)
+print("✓ Aplicación Flask inicializada correctamente")
+print("="*60 + "\n")
 
 
 if __name__ == '__main__':

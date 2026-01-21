@@ -603,6 +603,19 @@ def index():
     return send_from_directory(app.static_folder, 'index.html')
 
 
+@app.route('/health')
+def health_check():
+    """
+    Health check endpoint para Railway y otros servicios de monitoreo.
+    """
+    return jsonify({
+        'status': 'healthy',
+        'service': 'Sistema de Asistencia a Asambleas',
+        'usuarios_cargados': len(usuarios_cache),
+        'asistencias_registradas': len(asistencias_cache)
+    }), 200
+
+
 @app.route('/<path:path>')
 def static_files(path):
     """

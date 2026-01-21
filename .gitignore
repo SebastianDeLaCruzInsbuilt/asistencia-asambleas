@@ -1,0 +1,64 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Flask
+instance/
+.webassets-cache
+
+# Environment variables
+.env
+.env.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Deployment
+lightsail/
+cdk/
+cdk-python/
+*.pem
+*.zip
+
+# Credentials (IMPORTANTE: no subir credenciales de producción)
+# data/admin_credentials.json se incluye con valores por defecto para Railway
+# Cámbialo después del primer deploy
+lightsail/credentials.json
+cdk/credentials.json
+
+# Logs
+*.log
+
+# Certificates
+certs/*.pem
+certs/*.crt
+certs/*.key

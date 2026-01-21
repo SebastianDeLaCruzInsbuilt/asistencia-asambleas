@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login Administrativo - Asamblea</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        body {
+            background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .login-container {
+            background: var(--color-white);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow-lg);
+            padding: 40px;
+            max-width: 400px;
+            width: 100%;
+        }
+
+        .login-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .login-header h1 {
+            font-size: 24px;
+            color: var(--color-text);
+            margin-bottom: 8px;
+        }
+
+        .login-header p {
+            color: var(--color-text-light);
+            font-size: 14px;
+        }
+
+        .login-icon {
+            width: 80px;
+            height: 80px;
+            background: var(--color-primary);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+            font-size: 40px;
+            color: var(--color-white);
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--color-text);
+            font-size: 14px;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius);
+            font-size: 14px;
+            transition: var(--transition);
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: var(--color-primary);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        .btn-login {
+            width: 100%;
+            background: var(--color-primary);
+            color: var(--color-white);
+            padding: 14px;
+            border: none;
+            border-radius: var(--radius);
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            margin-top: 10px;
+        }
+
+        .btn-login:hover:not(:disabled) {
+            background: var(--color-primary-dark);
+        }
+
+        .btn-login:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .btn-volver {
+            width: 100%;
+            background: var(--color-bg);
+            color: var(--color-text);
+            padding: 12px;
+            border: none;
+            border-radius: var(--radius);
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            margin-top: 12px;
+            text-decoration: none;
+            display: block;
+            text-align: center;
+        }
+
+        .btn-volver:hover {
+            background: var(--color-border);
+        }
+
+        .mensaje-error {
+            background: #fee2e2;
+            color: #991b1b;
+            padding: 12px;
+            border-radius: var(--radius);
+            font-size: 14px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .mensaje-error.activo {
+            display: block;
+        }
+
+        @media (max-width: 480px) {
+            .login-container {
+                padding: 30px 20px;
+            }
+
+            .login-header h1 {
+                font-size: 20px;
+            }
+
+            .login-icon {
+                width: 60px;
+                height: 60px;
+                font-size: 30px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="login-header">
+            <div class="login-icon">🔐</div>
+            <h1>Acceso Administrativo</h1>
+            <p>Ingresa tus credenciales para continuar</p>
+        </div>
+
+        <div id="mensaje-error" class="mensaje-error"></div>
+
+        <form id="form-login">
+            <div class="form-group">
+                <label for="username">Usuario</label>
+                <input 
+                    type="text" 
+                    id="username" 
+                    name="username" 
+                    required 
+                    placeholder="Ingresa tu usuario"
+                    autocomplete="username"
+                >
+            </div>
+
+            <div class="form-group">
+                <label for="password">Contraseña</label>
+                <input 
+                    type="password" 
+                    id="password" 
+                    name="password" 
+                    required 
+                    placeholder="Ingresa tu contraseña"
+                    autocomplete="current-password"
+                >
+            </div>
+
+            <button type="submit" class="btn-login" id="btn-login">
+                Iniciar Sesión
+            </button>
+
+            <a href="index.html" class="btn-volver">
+                ← Volver a Confirmación
+            </a>
+        </form>
+    </div>
+
+    <script>
+        const formLogin = document.getElementById('form-login');
+        const btnLogin = document.getElementById('btn-login');
+        const mensajeError = document.getElementById('mensaje-error');
+
+        // Verificar si ya está autenticado
+        if (localStorage.getItem('admin_token')) {
+            window.location.href = 'admin.html';
+        }
+
+        formLogin.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            // Deshabilitar botón
+            btnLogin.disabled = true;
+            btnLogin.textContent = 'Verificando...';
+
+            // Ocultar mensaje de error
+            mensajeError.classList.remove('activo');
+
+            // Obtener datos del formulario
+            const username = document.getElementById('username').value.trim();
+            const password = document.getElementById('password').value;
+
+            try {
+                // Enviar petición de login
+                const response = await fetch('/api/admin/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ username, password })
+                });
+
+                const data = await response.json();
+
+                if (response.ok && data.success) {
+                    // Guardar token en localStorage
+                    localStorage.setItem('admin_token', data.token);
+                    
+                    // Redirigir al panel administrativo
+                    window.location.href = 'admin.html';
+                } else {
+                    // Mostrar error
+                    mensajeError.textContent = data.mensaje || 'Usuario o contraseña incorrectos';
+                    mensajeError.classList.add('activo');
+                    
+                    // Limpiar contraseña
+                    document.getElementById('password').value = '';
+                    document.getElementById('password').focus();
+                }
+            } catch (error) {
+                console.error('Error al iniciar sesión:', error);
+                mensajeError.textContent = 'Error de conexión. Por favor intenta nuevamente.';
+                mensajeError.classList.add('activo');
+            } finally {
+                // Rehabilitar botón
+                btnLogin.disabled = false;
+                btnLogin.textContent = 'Iniciar Sesión';
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,733 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Administración de Usuarios - Asamblea</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        /* Estilos específicos para la interfaz administrativa */
+        .admin-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .admin-header {
+            background: var(--color-primary);
+            color: var(--color-white);
+            padding: 20px;
+            border-radius: var(--radius);
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .admin-header h1 {
+            font-size: 24px;
+            margin: 0;
+        }
+
+        .btn-volver {
+            background: var(--color-white);
+            color: var(--color-primary);
+            padding: 10px 20px;
+            border-radius: var(--radius);
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 14px;
+            transition: var(--transition);
+        }
+
+        .btn-volver:hover {
+            background: var(--color-bg);
+        }
+
+        .admin-section {
+            background: var(--color-white);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow-md);
+            padding: 30px;
+            margin-bottom: 30px;
+        }
+
+        .admin-section h2 {
+            font-size: 20px;
+            margin-bottom: 20px;
+            color: var(--color-text);
+        }
+
+        /* Tabla de usuarios */
+        .tabla-usuarios {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        .tabla-usuarios thead {
+            background: var(--color-bg);
+        }
+
+        .tabla-usuarios th {
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 14px;
+            color: var(--color-text);
+            border-bottom: 2px solid var(--color-border);
+        }
+
+        .tabla-usuarios td {
+            padding: 12px;
+            border-bottom: 1px solid var(--color-border);
+            font-size: 14px;
+        }
+
+        .tabla-usuarios tbody tr:hover {
+            background: var(--color-bg);
+        }
+
+        .tabla-usuarios tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        .tabla-vacia {
+            text-align: center;
+            padding: 40px;
+            color: var(--color-text-light);
+        }
+
+        /* Botones de acción en tabla */
+        .btn-accion {
+            padding: 6px 12px;
+            border: none;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            margin-right: 8px;
+        }
+
+        .btn-editar {
+            background: var(--color-primary);
+            color: var(--color-white);
+        }
+
+        .btn-editar:hover {
+            background: var(--color-primary-dark);
+        }
+
+        .btn-eliminar {
+            background: var(--color-error);
+            color: var(--color-white);
+        }
+
+        .btn-eliminar:hover {
+            background: #b91c1c;
+        }
+
+        /* Formulario de agregar usuario */
+        .form-agregar {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr auto;
+            gap: 12px;
+            align-items: end;
+        }
+
+        .form-agregar .form-group {
+            margin-bottom: 0;
+        }
+
+        .form-agregar input {
+            width: 100%;
+        }
+
+        .btn-agregar {
+            background: var(--color-success);
+            color: var(--color-white);
+            padding: 12px 24px;
+            border: none;
+            border-radius: var(--radius);
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            white-space: nowrap;
+        }
+
+        .btn-agregar:hover:not(:disabled) {
+            background: #15803d;
+        }
+
+        .btn-agregar:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        /* Botón de exportar */
+        .btn-exportar {
+            background: var(--color-primary);
+            color: var(--color-white);
+            padding: 12px 24px;
+            border: none;
+            border-radius: var(--radius);
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            display: inline-block;
+            text-decoration: none;
+        }
+
+        .btn-exportar:hover {
+            background: var(--color-primary-dark);
+        }
+
+        /* Modal de edición */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.activo {
+            display: flex;
+        }
+
+        .modal-contenido {
+            background: var(--color-white);
+            border-radius: var(--radius);
+            padding: 30px;
+            max-width: 500px;
+            width: 90%;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .modal-header h3 {
+            margin: 0;
+            font-size: 20px;
+        }
+
+        .btn-cerrar {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: var(--color-text-light);
+            padding: 0;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn-cerrar:hover {
+            color: var(--color-text);
+        }
+
+        .modal-footer {
+            display: flex;
+            gap: 12px;
+            margin-top: 24px;
+        }
+
+        .btn-cancelar {
+            background: var(--color-bg);
+            color: var(--color-text);
+            padding: 12px 24px;
+            border: none;
+            border-radius: var(--radius);
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            flex: 1;
+        }
+
+        .btn-cancelar:hover {
+            background: var(--color-border);
+        }
+
+        .btn-guardar {
+            background: var(--color-primary);
+            color: var(--color-white);
+            padding: 12px 24px;
+            border: none;
+            border-radius: var(--radius);
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            flex: 1;
+        }
+
+        .btn-guardar:hover:not(:disabled) {
+            background: var(--color-primary-dark);
+        }
+
+        .btn-guardar:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .form-agregar {
+                grid-template-columns: 1fr;
+            }
+
+            .admin-header {
+                flex-direction: column;
+                gap: 16px;
+                text-align: center;
+            }
+
+            .tabla-usuarios {
+                font-size: 12px;
+            }
+
+            .tabla-usuarios th,
+            .tabla-usuarios td {
+                padding: 8px;
+            }
+
+            .btn-accion {
+                padding: 4px 8px;
+                font-size: 11px;
+                margin-right: 4px;
+            }
+        }
+    </style>
+</head>
+<body style="background: var(--color-bg); display: block; padding: 0;">
+    <div class="admin-container">
+        <!-- Header -->
+        <div class="admin-header">
+            <h1>Administración de Usuarios</h1>
+            <div style="display: flex; gap: 12px;">
+                <button id="btn-cambiar-password" class="btn-volver" style="background: #f59e0b; color: white; border: none; cursor: pointer;">
+                    🔑 Cambiar Contraseña
+                </button>
+                <button id="btn-cerrar-sesion" class="btn-volver" style="background: #dc2626; color: white; border: none; cursor: pointer;">
+                    🔒 Cerrar Sesión
+                </button>
+                <a href="index.html" class="btn-volver">← Volver a Confirmación</a>
+            </div>
+        </div>
+
+        <!-- Área de mensajes -->
+        <div id="area-mensajes" class="mensajes"></div>
+
+        <!-- Sección: Agregar Usuario -->
+        <div class="admin-section">
+            <h2>Agregar Nuevo Usuario</h2>
+            <form id="form-agregar" class="form-agregar">
+                <div class="form-group">
+                    <label for="nuevo-userId">ID de Usuario</label>
+                    <input 
+                        type="text" 
+                        id="nuevo-userId" 
+                        name="userId" 
+                        required 
+                        placeholder="Ej: 12345678"
+                    >
+                </div>
+                <div class="form-group">
+                    <label for="nuevo-documento">Documento</label>
+                    <input 
+                        type="text" 
+                        id="nuevo-documento" 
+                        name="documento" 
+                        required 
+                        placeholder="Ej: 12345678"
+                    >
+                </div>
+                <div class="form-group">
+                    <label for="nuevo-nombre">Nombre Completo</label>
+                    <input 
+                        type="text" 
+                        id="nuevo-nombre" 
+                        name="nombre" 
+                        required 
+                        placeholder="Ej: Juan Pérez"
+                    >
+                </div>
+                <button type="submit" class="btn-agregar" id="btn-agregar">
+                    Agregar Usuario
+                </button>
+            </form>
+        </div>
+
+        <!-- Sección: Carga Masiva de Usuarios -->
+        <div class="admin-section">
+            <h2>📤 Carga Masiva de Usuarios (CSV)</h2>
+            <p style="color: var(--color-text-light); margin-bottom: 20px;">
+                Importa múltiples usuarios desde un archivo CSV. Los usuarios existentes con el mismo ID serán omitidos.
+            </p>
+
+            <!-- Guía de formato -->
+            <div style="background: #f0f9ff; border: 1px solid #0ea5e9; border-radius: var(--radius); padding: 16px; margin-bottom: 20px;">
+                <h3 style="margin: 0 0 12px 0; font-size: 16px; color: #0369a1;">
+                    📋 Formato del archivo CSV
+                </h3>
+                <p style="margin: 0 0 8px 0; font-size: 14px; color: var(--color-text);">
+                    El archivo debe tener las siguientes columnas en la primera fila:
+                </p>
+                <code style="display: block; background: white; padding: 12px; border-radius: 4px; font-family: monospace; font-size: 13px; margin-bottom: 12px;">
+                    userId,documento,nombre
+                </code>
+                <p style="margin: 0 0 8px 0; font-size: 14px; color: var(--color-text);">
+                    <strong>Ejemplo:</strong>
+                </p>
+                <code style="display: block; background: white; padding: 12px; border-radius: 4px; font-family: monospace; font-size: 13px; white-space: pre;">userId,documento,nombre
+12345678,12345678,Juan Pérez
+87654321,87654321,María García
+11223344,11223344,Carlos López</code>
+                <p style="margin: 12px 0 0 0; font-size: 13px; color: #0369a1;">
+                    💡 <strong>Tip:</strong> Puedes exportar la lista actual, editarla en Excel y volver a importarla.
+                </p>
+            </div>
+
+            <!-- Formulario de carga -->
+            <div style="display: flex; gap: 12px; align-items: end;">
+                <div class="form-group" style="flex: 1; margin-bottom: 0;">
+                    <label for="input-csv-file">Seleccionar archivo CSV</label>
+                    <input 
+                        type="file" 
+                        id="input-csv-file" 
+                        accept=".csv,text/csv"
+                        style="padding: 10px; border: 2px dashed var(--color-border); border-radius: var(--radius); cursor: pointer;"
+                    >
+                </div>
+                <button 
+                    type="button" 
+                    id="btn-importar-csv" 
+                    class="btn-agregar"
+                    style="white-space: nowrap;"
+                >
+                    📤 Importar CSV
+                </button>
+            </div>
+
+            <!-- Resultado de la importación -->
+            <div id="resultado-importacion" style="display: none; margin-top: 20px; padding: 16px; border-radius: var(--radius); background: #f0fdf4; border: 1px solid #22c55e;">
+                <h4 style="margin: 0 0 8px 0; color: #15803d;">✅ Importación completada</h4>
+                <p id="resultado-importacion-texto" style="margin: 0; font-size: 14px; color: var(--color-text);"></p>
+            </div>
+        </div>
+
+        <!-- Sección: Lista de Usuarios -->
+        <div class="admin-section">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h2 style="margin: 0;">Lista de Usuarios Autorizados</h2>
+                <button id="btn-exportar" class="btn-exportar">
+                    Exportar Usuarios a CSV
+                </button>
+            </div>
+
+            <!-- Indicador de carga -->
+            <div id="loading" class="loading oculto">
+                <div class="spinner"></div>
+                <p>Cargando usuarios...</p>
+            </div>
+
+            <!-- Tabla de usuarios -->
+            <div id="contenedor-tabla">
+                <table class="tabla-usuarios" id="tabla-usuarios">
+                    <thead>
+                        <tr>
+                            <th>ID Usuario</th>
+                            <th>Documento</th>
+                            <th>Nombre</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tbody-usuarios">
+                        <!-- Los usuarios se cargarán dinámicamente -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Sección: Asistencias Confirmadas -->
+        <div class="admin-section">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 12px;">
+                <h2 style="margin: 0;">Asistencias Confirmadas</h2>
+                <div style="display: flex; gap: 12px;">
+                    <button id="btn-reiniciar-asistencias" class="btn-exportar" style="background: #dc2626;">
+                        🔄 Reiniciar Asistencias
+                    </button>
+                    <button id="btn-exportar-asistencias" class="btn-exportar">
+                        📥 Descargar CSV
+                    </button>
+                </div>
+            </div>
+
+            <!-- Advertencia sobre reinicio -->
+            <div id="advertencia-reinicio" style="display: none; background: #fef2f2; border: 1px solid #dc2626; border-radius: var(--radius); padding: 16px; margin-bottom: 20px;">
+                <h4 style="margin: 0 0 8px 0; color: #991b1b;">⚠️ ¿Estás seguro?</h4>
+                <p style="margin: 0 0 12px 0; font-size: 14px; color: var(--color-text);">
+                    Esta acción eliminará <strong>TODAS</strong> las asistencias confirmadas de forma permanente. 
+                    Se recomienda exportar el CSV antes de continuar.
+                </p>
+                <div style="display: flex; gap: 12px;">
+                    <button id="btn-confirmar-reinicio" class="btn-agregar" style="background: #dc2626;">
+                        Sí, eliminar todas las asistencias
+                    </button>
+                    <button id="btn-cancelar-reinicio" class="btn-cancelar">
+                        Cancelar
+                    </button>
+                </div>
+            </div>
+
+            <!-- Indicador de carga -->
+            <div id="loading-asistencias" class="loading oculto">
+                <div class="spinner"></div>
+                <p>Cargando asistencias...</p>
+            </div>
+
+            <!-- Tabla de asistencias -->
+            <div id="contenedor-tabla-asistencias">
+                <table class="tabla-usuarios" id="tabla-asistencias">
+                    <thead>
+                        <tr>
+                            <th>Nombre</th>
+                            <th>ID Usuario</th>
+                            <th>Fecha y Hora</th>
+                            <th>Ubicación</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tbody-asistencias">
+                        <!-- Las asistencias se cargarán dinámicamente -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Sección: Configuración de Ubicación -->
+        <div class="admin-section">
+            <h2>📍 Configuración de Ubicación de la Asamblea</h2>
+            <p style="color: var(--color-text-light); margin-bottom: 20px;">
+                Configura las coordenadas geográficas donde se realizará la asamblea. Los usuarios solo podrán confirmar asistencia si están dentro del radio permitido.
+            </p>
+
+            <form id="form-configuracion-ubicacion" class="form-agregar" style="grid-template-columns: 1fr 1fr 1fr auto;">
+                <div class="form-group">
+                    <label for="config-latitud">Latitud</label>
+                    <input 
+                        type="number" 
+                        id="config-latitud" 
+                        name="latitud" 
+                        step="0.0000001"
+                        required 
+                        placeholder="Ej: 4.3229422"
+                    >
+                    <small style="color: var(--color-text-light); font-size: 12px;">
+                        Rango: -90 a 90
+                    </small>
+                </div>
+                <div class="form-group">
+                    <label for="config-longitud">Longitud</label>
+                    <input 
+                        type="number" 
+                        id="config-longitud" 
+                        name="longitud" 
+                        step="0.0000001"
+                        required 
+                        placeholder="Ej: -74.3693629"
+                    >
+                    <small style="color: var(--color-text-light); font-size: 12px;">
+                        Rango: -180 a 180
+                    </small>
+                </div>
+                <div class="form-group">
+                    <label for="config-radio">Radio Permitido (metros)</label>
+                    <input 
+                        type="number" 
+                        id="config-radio" 
+                        name="radioPermitido" 
+                        min="1"
+                        required 
+                        placeholder="Ej: 100"
+                    >
+                    <small style="color: var(--color-text-light); font-size: 12px;">
+                        Distancia máxima permitida
+                    </small>
+                </div>
+                <button type="submit" class="btn-agregar" id="btn-guardar-ubicacion" style="align-self: end; margin-bottom: 20px;">
+                    💾 Guardar Ubicación
+                </button>
+            </form>
+
+            <!-- Información actual -->
+            <div id="info-ubicacion-actual" style="background: #f0fdf4; border: 1px solid #22c55e; border-radius: var(--radius); padding: 16px; margin-top: 20px;">
+                <h3 style="margin: 0 0 12px 0; font-size: 16px; color: #15803d;">
+                    📌 Ubicación Actual
+                </h3>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; font-size: 14px;">
+                    <div>
+                        <strong>Latitud:</strong> <span id="ubicacion-actual-lat">-</span>
+                    </div>
+                    <div>
+                        <strong>Longitud:</strong> <span id="ubicacion-actual-lon">-</span>
+                    </div>
+                    <div>
+                        <strong>Radio:</strong> <span id="ubicacion-actual-radio">-</span> metros
+                    </div>
+                </div>
+            </div>
+
+            <!-- Ayuda para obtener coordenadas -->
+            <div style="background: #eff6ff; border: 1px solid #3b82f6; border-radius: var(--radius); padding: 16px; margin-top: 16px;">
+                <h3 style="margin: 0 0 12px 0; font-size: 16px; color: #1e40af;">
+                    💡 ¿Cómo obtener las coordenadas?
+                </h3>
+                <ol style="margin: 0; padding-left: 20px; font-size: 14px; color: var(--color-text);">
+                    <li style="margin-bottom: 8px;">Abre <a href="https://www.google.com/maps" target="_blank" style="color: #3b82f6;">Google Maps</a></li>
+                    <li style="margin-bottom: 8px;">Busca la ubicación de tu asamblea</li>
+                    <li style="margin-bottom: 8px;">Haz clic derecho en el punto exacto</li>
+                    <li style="margin-bottom: 8px;">Selecciona las coordenadas que aparecen en la parte superior (se copiarán automáticamente)</li>
+                    <li>Pega las coordenadas en los campos de arriba</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Edición -->
+    <div id="modal-editar" class="modal">
+        <div class="modal-contenido">
+            <div class="modal-header">
+                <h3>Editar Usuario</h3>
+                <button class="btn-cerrar" id="btn-cerrar-modal">&times;</button>
+            </div>
+            <form id="form-editar">
+                <input type="hidden" id="editar-userId-original" name="userIdOriginal">
+                
+                <div class="form-group">
+                    <label for="editar-userId">ID de Usuario</label>
+                    <input 
+                        type="text" 
+                        id="editar-userId" 
+                        name="userId" 
+                        required 
+                        readonly
+                        style="background: var(--color-bg); cursor: not-allowed;"
+                    >
+                    <small style="color: var(--color-text-light); font-size: 12px;">
+                        El ID de usuario no se puede modificar
+                    </small>
+                </div>
+                
+                <div class="form-group">
+                    <label for="editar-documento">Documento</label>
+                    <input 
+                        type="text" 
+                        id="editar-documento" 
+                        name="documento" 
+                        required 
+                        placeholder="Ej: 12345678"
+                    >
+                </div>
+                
+                <div class="form-group">
+                    <label for="editar-nombre">Nombre Completo</label>
+                    <input 
+                        type="text" 
+                        id="editar-nombre" 
+                        name="nombre" 
+                        required 
+                        placeholder="Ej: Juan Pérez"
+                    >
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn-cancelar" id="btn-cancelar-editar">
+                        Cancelar
+                    </button>
+                    <button type="submit" class="btn-guardar" id="btn-guardar-editar">
+                        Guardar Cambios
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal de Cambiar Contraseña -->
+    <div id="modal-cambiar-password" class="modal">
+        <div class="modal-contenido">
+            <div class="modal-header">
+                <h3>🔑 Cambiar Contraseña</h3>
+                <button class="btn-cerrar" id="btn-cerrar-modal-password">&times;</button>
+            </div>
+            <form id="form-cambiar-password">
+                <div class="form-group">
+                    <label for="password-actual">Contraseña Actual</label>
+                    <input 
+                        type="password" 
+                        id="password-actual" 
+                        name="passwordActual" 
+                        required 
+                        placeholder="Ingresa tu contraseña actual"
+                        autocomplete="current-password"
+                    >
+                </div>
+                
+                <div class="form-group">
+                    <label for="password-nueva">Nueva Contraseña</label>
+                    <input 
+                        type="password" 
+                        id="password-nueva" 
+                        name="passwordNueva" 
+                        required 
+                        placeholder="Mínimo 6 caracteres"
+                        autocomplete="new-password"
+                    >
+                    <small style="color: var(--color-text-light); font-size: 12px;">
+                        La contraseña debe tener al menos 6 caracteres
+                    </small>
+                </div>
+                
+                <div class="form-group">
+                    <label for="password-confirmar">Confirmar Nueva Contraseña</label>
+                    <input 
+                        type="password" 
+                        id="password-confirmar" 
+                        name="passwordConfirmar" 
+                        required 
+                        placeholder="Repite la nueva contraseña"
+                        autocomplete="new-password"
+                    >
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn-cancelar" id="btn-cancelar-password">
+                        Cancelar
+                    </button>
+                    <button type="submit" class="btn-guardar" id="btn-guardar-password">
+                        Cambiar Contraseña
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="admin.js"></script>
+</body>
+</html>

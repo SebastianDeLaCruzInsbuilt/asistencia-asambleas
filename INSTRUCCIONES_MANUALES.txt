@@ -1,0 +1,104 @@
+================================================================================
+  INSTRUCCIONES MANUALES PARA DEPLOY EN RAILWAY
+================================================================================
+
+Git esta instalado pero PowerShell no lo reconoce en esta sesion.
+
+SOLUCION RAPIDA: Ejecuta estos comandos UNO POR UNO en PowerShell
+
+
+PASO 1: AGREGAR GIT AL PATH (temporal)
+---------------------------------------
+
+$env:Path += ";C:\Program Files\Git\cmd"
+
+
+PASO 2: VERIFICAR GIT
+----------------------
+
+git --version
+
+
+PASO 3: CONFIGURAR GIT
+-----------------------
+
+git config --global user.name "Tu Nombre Completo"
+git config --global user.email "tu.email@ejemplo.com"
+
+(Reemplaza con tu informacion real)
+
+
+PASO 4: INICIALIZAR REPOSITORIO
+--------------------------------
+
+git init
+git add .
+git commit -m "Initial commit - Sistema de Asistencia"
+
+
+PASO 5: CREAR REPOSITORIO EN GITHUB
+------------------------------------
+
+1. Ve a: https://github.com/new
+2. Nombre: asistencia-asambleas (o el que prefieras)
+3. Visibilidad: Private (recomendado)
+4. NO marques: README, .gitignore, o license
+5. Click en "Create repository"
+
+
+PASO 6: CONECTAR CON GITHUB
+----------------------------
+
+git remote add origin https://github.com/TU_USUARIO/asistencia-asambleas.git
+git branch -M main
+git push -u origin main
+
+(Reemplaza TU_USUARIO con tu usuario de GitHub)
+
+NOTA: GitHub te pedira autenticacion.
+Si tienes 2FA, necesitas un Personal Access Token:
+- Ve a: https://github.com/settings/tokens
+- Generate new token (classic)
+- Selecciona "repo" scope
+- Usa el token como contrasena
+
+
+PASO 7: DEPLOY EN RAILWAY
+--------------------------
+
+1. Ve a: https://railway.app
+2. Login con GitHub
+3. New Project > Deploy from GitHub repo
+4. Selecciona tu repositorio
+5. Railway detectara automaticamente la configuracion
+6. Espera 2-5 minutos
+7. Ve a Settings > Domains > Generate Domain
+8. Railway te dara una URL como:
+   https://asistencia-asambleas-production.up.railway.app
+
+
+PASO 8: VERIFICAR Y CONFIGURAR
+-------------------------------
+
+1. Abre la URL de Railway
+2. Login con: admin / admin123
+3. CAMBIA LA CONTRASENA INMEDIATAMENTE
+4. Configura ubicacion de asamblea
+5. Importa usuarios
+
+
+ACTUALIZACIONES FUTURAS
+------------------------
+
+Para actualizar la app:
+
+git add .
+git commit -m "Descripcion de cambios"
+git push
+
+Railway redesplegara automaticamente.
+
+
+================================================================================
+  LISTO - Tu app estara en Railway con HTTPS y dominio gratis
+================================================================================

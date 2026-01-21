@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Confirmación de Asistencia - Asamblea</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Confirmación de Asistencia</h1>
+            <p class="subtitle">Sistema de registro para asamblea</p>
+        </header>
+
+        <main>
+            <!-- Paso 1: Identificación -->
+            <section id="paso-identificacion" class="paso activo">
+                <div class="paso-numero">Paso 1 de 2</div>
+                <h2>Identificación</h2>
+                <p class="instrucciones">Por favor ingresa tu número de documento para continuar</p>
+                
+                <form id="form-identificacion">
+                    <div class="form-group">
+                        <label for="documento">Número de Documento</label>
+                        <input 
+                            type="text" 
+                            id="documento" 
+                            name="documento" 
+                            required 
+                            placeholder="Ej: 12345678"
+                            autocomplete="off"
+                        >
+                    </div>
+
+                    <button type="submit" class="btn btn-primary" id="btn-validar">
+                        Validar Identidad
+                    </button>
+                </form>
+            </section>
+
+            <!-- Paso 2: Confirmación de Ubicación -->
+            <section id="paso-ubicacion" class="paso">
+                <div class="paso-numero">Paso 2 de 2</div>
+                <h2>Confirmación de Ubicación</h2>
+                <p class="instrucciones">Verificaremos que te encuentres en el lugar de la asamblea</p>
+                
+                <div class="usuario-info">
+                    <p><strong>Usuario:</strong> <span id="nombre-usuario"></span></p>
+                </div>
+
+                <button type="button" class="btn btn-primary" id="btn-confirmar-ubicacion">
+                    Confirmar mi Ubicación
+                </button>
+
+                <p class="nota">
+                    <small>Se solicitará permiso para acceder a tu ubicación GPS</small>
+                </p>
+            </section>
+
+            <!-- Área de mensajes -->
+            <div id="area-mensajes" class="mensajes"></div>
+
+            <!-- Indicador de carga -->
+            <div id="loading" class="loading oculto">
+                <div class="spinner"></div>
+                <p>Procesando...</p>
+            </div>
+        </main>
+
+        <footer>
+            <p>Sistema de Confirmación de Asistencia v1.0</p>
+        </footer>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>

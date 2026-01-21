@@ -1,0 +1,39 @@
+# ARCHIVO DE EJEMPLO: usuarios.csv
+# 
+# Este archivo muestra el formato correcto para la base de datos de usuarios autorizados.
+# 
+# FORMATO:
+# - Primera línea: Encabezados de columnas (NO MODIFICAR)
+# - Siguientes líneas: Datos de usuarios (uno por línea)
+# 
+# COLUMNAS:
+# - userId: Identificador único del usuario (puede ser igual al documento)
+# - documento: Número de documento de identidad (DNI, cédula, pasaporte, etc.)
+# - nombre: Nombre completo del usuario
+# 
+# REGLAS IMPORTANTES:
+# ✓ NO dejar líneas vacías entre usuarios
+# ✓ NO usar comas dentro de los nombres (usar punto y coma si es necesario)
+# ✓ NO incluir espacios extra al inicio o final de los campos
+# ✓ Asegurarse de que cada userId sea único
+# ✓ El archivo se recarga automáticamente al guardarlo
+# 
+# EJEMPLO DE IMPORTACIÓN MASIVA:
+# 1. Abrir este archivo en Excel o Google Sheets
+# 2. Copiar tus datos en el mismo formato
+# 3. Guardar como CSV
+# 4. Reemplazar el archivo usuarios.csv en la carpeta data/
+# 
+# ============================================================
+# INICIO DE DATOS (Eliminar estas líneas de comentario al usar)
+# ============================================================
+
+userId,documento,nombre
+12345678,12345678,Juan Pérez
+87654321,87654321,María García
+11223344,11223344,Carlos López
+55667788,55667788,Ana Martínez
+99887766,99887766,Luis Rodríguez
+44556677,44556677,Carmen Silva
+33445566,33445566,Roberto Torres
+22334455,22334455,Patricia Ramos

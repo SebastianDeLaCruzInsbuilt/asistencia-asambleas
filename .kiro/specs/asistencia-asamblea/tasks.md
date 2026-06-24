@@ -21,7 +21,8 @@ Implementación de una aplicación web simple en Python (Flask) con frontend HTM
     - Manejo de errores de formato
     - _Requirements: 4.3, 4.6_
 
-  - [ ]* 2.2 Escribir property test para carga de CSV
+  - [ ] 2.2 Escribir property test para carga de CSV
+
     - **Property 9: Round-trip de usuarios**
     - **Validates: Requirements 4.3**
 

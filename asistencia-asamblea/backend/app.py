@@ -1629,6 +1629,255 @@ def importar_usuarios_csv():
         }), 500
 
 
+@app.route('/api/usuarios/importar-pdf', methods=['POST'])
+@requiere_autenticacion
+def importar_usuarios_pdf():
+    """
+    Endpoint POST /api/usuarios/importar-pdf
+    
+    Importa usuarios desde uno o múltiples archivos PDF con formato de nómina.
+    Extrae CodEmpleado (usado como documento) y Nombre del empleado.
+    El userId se genera automáticamente como identificador interno.
+    
+    Request: multipart/form-data con campo 'archivos' (múltiples archivos PDF)
+    
+    Response:
+        {
+            "success": boolean,
+            "mensaje": "string",
+            "agregados": number,
+            "omitidos": number,
+            "errores": number,
+            "detalles_por_archivo": [...]
+        }
+    """
+    try:
+        import pdfplumber
+        import re
+        
+        # Verificar que se enviaron archivos
+        if 'archivos' not in request.files:
+            return jsonify({
+                'success': False,
+                'mensaje': 'No se enviaron archivos PDF'
+            }), 400
+        
+        archivos = request.files.getlist('archivos')
+        
+        if not archivos or all(f.filename == '' for f in archivos):
+            return jsonify({
+                'success': False,
+                'mensaje': 'No se seleccionaron archivos'
+            }), 400
+        
+        # Calcular siguiente userId disponible
+        max_user_id = 0
+        for usuario in usuarios_cache:
+            try:
+                uid = int(usuario['userId'])
+                if uid > max_user_id:
+                    max_user_id = uid
+            except (ValueError, TypeError):
+                pass
+        
+        siguiente_user_id = max_user_id + 1
+        
+        # Procesar cada archivo PDF
+        total_agregados = 0
+        total_omitidos = 0
+        total_errores = 0
+        detalles_por_archivo = []
+        
+        for archivo in archivos:
+            if not archivo.filename:
+                continue
+                
+            # Verificar extensión
+            if not archivo.filename.lower().endswith('.pdf'):
+                detalles_por_archivo.append({
+                    'archivo': archivo.filename,
+                    'estado': 'error',
+                    'mensaje': 'No es un archivo PDF',
+                    'agregados': 0,
+                    'omitidos': 0,
+                    'errores': 1
+                })
+                total_errores += 1
+                continue
+            
+            try:
+                # Leer PDF con pdfplumber
+                pdf = pdfplumber.open(archivo)
+                empleados_extraidos = []
+                
+                for pagina in pdf.pages:
+                    texto = pagina.extract_text()
+                    if not texto:
+                        continue
+                    
+                    lineas = texto.split('\n')
+                    
+                    for linea in lineas:
+                        # Ignorar líneas de encabezado y pie
+                        if any(skip in linea for skip in [
+                            'LISTADO DE CONCEPTOS', 'Codigo de la Nomina',
+                            'Centro Costo:', 'Esquemas:', 'CodEmpleado',
+                            'ASOCIACION DE EDUCADORES', 'TOTAL POR CONCEPTO',
+                            'Humano -', 'Página', 'SECRETARIA DE EDUCACION',
+                            'Tipo Concepto'
+                        ]):
+                            continue
+                        
+                        # Patrón: número(s) separados por coma o punto como miles,
+                        # seguido de nombre, seguido de valor monetario al final
+                        # Formato: "334,683 HARVEY OVIEDO RONDON 73,398.00"
+                        # o "1,069,731,426 KAROL ANDREA GARZON CRUZ 57,419.00"
+                        
+                        # Extraer el valor monetario al final (número con formato X,XXX.XX)
+                        match_valor = re.search(r'[\d,]+\.\d{2}\s*$', linea.strip())
+                        if not match_valor:
+                            continue
+                        
+                        # Remover el valor del final
+                        linea_sin_valor = linea[:match_valor.start()].strip()
+                        
+                        if not linea_sin_valor:
+                            continue
+                        
+                        # Ahora extraer el CodEmpleado del inicio
+                        # El CodEmpleado puede tener formato con separadores de miles: 
+                        # "334,683" o "1,069,731,426" o "11,386,308"
+                        match_cod = re.match(r'^([\d,]+)\s+(.+)$', linea_sin_valor)
+                        
+                        if not match_cod:
+                            continue
+                        
+                        cod_empleado_raw = match_cod.group(1)
+                        nombre = match_cod.group(2).strip()
+                        
+                        # Remover separadores de miles del CodEmpleado
+                        cod_empleado = cod_empleado_raw.replace(',', '')
+                        
+                        # Validar que el código sea numérico y el nombre no esté vacío
+                        if not cod_empleado.isdigit() or not nombre:
+                            continue
+                        
+                        # Limpiar nombre (quitar espacios múltiples)
+                        nombre = ' '.join(nombre.split())
+                        
+                        empleados_extraidos.append({
+                            'documento': cod_empleado,
+                            'nombre': nombre
+                        })
+                
+                pdf.close()
+                
+                if not empleados_extraidos:
+                    detalles_por_archivo.append({
+                        'archivo': archivo.filename,
+                        'estado': 'error',
+                        'mensaje': 'No se encontraron empleados en el PDF',
+                        'agregados': 0,
+                        'omitidos': 0,
+                        'errores': 1
+                    })
+                    total_errores += 1
+                    continue
+                
+                # Importar empleados extraídos
+                archivo_agregados = 0
+                archivo_omitidos = 0
+                archivo_errores = 0
+                
+                for empleado in empleados_extraidos:
+                    # Verificar si ya existe por documento
+                    existe = False
+                    for u in usuarios_cache:
+                        if u['documento'] == empleado['documento']:
+                            existe = True
+                            break
+                    
+                    if existe:
+                        archivo_omitidos += 1
+                        continue
+                    
+                    # Agregar con userId auto-generado
+                    nuevo_usuario = {
+                        'userId': str(siguiente_user_id),
+                        'documento': empleado['documento'],
+                        'nombre': empleado['nombre']
+                    }
+                    
+                    usuarios_cache.append(nuevo_usuario)
+                    siguiente_user_id += 1
+                    archivo_agregados += 1
+                
+                total_agregados += archivo_agregados
+                total_omitidos += archivo_omitidos
+                total_errores += archivo_errores
+                
+                detalles_por_archivo.append({
+                    'archivo': archivo.filename,
+                    'estado': 'exitoso',
+                    'mensaje': f'{archivo_agregados} agregado(s), {archivo_omitidos} omitido(s)',
+                    'empleados_encontrados': len(empleados_extraidos),
+                    'agregados': archivo_agregados,
+                    'omitidos': archivo_omitidos,
+                    'errores': archivo_errores
+                })
+                
+            except Exception as e:
+                detalles_por_archivo.append({
+                    'archivo': archivo.filename,
+                    'estado': 'error',
+                    'mensaje': f'Error al procesar PDF: {str(e)}',
+                    'agregados': 0,
+                    'omitidos': 0,
+                    'errores': 1
+                })
+                total_errores += 1
+        
+        # Guardar en CSV si se agregó al menos uno
+        if total_agregados > 0:
+            try:
+                guardar_usuarios_csv(usuarios_cache)
+            except Exception as e:
+                return jsonify({
+                    'success': False,
+                    'mensaje': f'Usuarios extraídos pero error al guardar: {str(e)}',
+                    'agregados': total_agregados,
+                    'omitidos': total_omitidos,
+                    'errores': total_errores,
+                    'detalles_por_archivo': detalles_por_archivo
+                }), 500
+        
+        # Preparar mensaje
+        partes_mensaje = []
+        if total_agregados > 0:
+            partes_mensaje.append(f'{total_agregados} usuario(s) agregado(s)')
+        if total_omitidos > 0:
+            partes_mensaje.append(f'{total_omitidos} omitido(s) (ya existían)')
+        if total_errores > 0:
+            partes_mensaje.append(f'{total_errores} error(es)')
+        
+        mensaje = 'Importación completada: ' + ', '.join(partes_mensaje) if partes_mensaje else 'No se procesaron usuarios'
+        
+        return jsonify({
+            'success': True,
+            'mensaje': mensaje,
+            'agregados': total_agregados,
+            'omitidos': total_omitidos,
+            'errores': total_errores,
+            'detalles_por_archivo': detalles_por_archivo
+        }), 200
+        
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'mensaje': f'Error del servidor: {str(e)}'
+        }), 500
+
+
 @app.route('/api/usuarios/<user_id>', methods=['PUT'])
 @requiere_autenticacion
 def actualizar_usuario(user_id):

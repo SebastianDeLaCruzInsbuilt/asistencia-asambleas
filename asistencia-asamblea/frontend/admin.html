@@ -303,6 +303,35 @@
             cursor: not-allowed;
         }
 
+        /* Filtros de búsqueda en tablas */
+        .filtros-row th {
+            padding: 6px 8px;
+            border-bottom: 2px solid var(--color-primary);
+            background: #f0f4ff;
+        }
+
+        .filtro-input {
+            width: 100%;
+            padding: 6px 10px;
+            border: 1px solid var(--color-border);
+            border-radius: 4px;
+            font-size: 12px;
+            font-family: inherit;
+            transition: var(--transition);
+            box-sizing: border-box;
+        }
+
+        .filtro-input:focus {
+            outline: none;
+            border-color: var(--color-primary);
+            box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1);
+        }
+
+        .filtro-input::placeholder {
+            color: var(--color-text-light);
+            font-style: italic;
+        }
+
         /* Responsive */
         @media (max-width: 768px) {
             .form-agregar {
@@ -328,6 +357,11 @@
                 padding: 4px 8px;
                 font-size: 11px;
                 margin-right: 4px;
+            }
+
+            .filtro-input {
+                font-size: 11px;
+                padding: 4px 6px;
             }
         }
     </style>
@@ -449,6 +483,61 @@
             </div>
         </div>
 
+        <!-- Sección: Carga desde PDF de Nómina -->
+        <div class="admin-section">
+            <h2>📄 Importar Usuarios desde PDF de Nómina</h2>
+            <p style="color: var(--color-text-light); margin-bottom: 20px;">
+                Sube uno o varios archivos PDF con el listado de conceptos de nómina (formato ASOED). 
+                El sistema extraerá automáticamente el código de empleado (como documento) y el nombre.
+                El ID de usuario se genera automáticamente.
+            </p>
+
+            <!-- Guía de formato -->
+            <div style="background: #fef3c7; border: 1px solid #f59e0b; border-radius: var(--radius); padding: 16px; margin-bottom: 20px;">
+                <h3 style="margin: 0 0 12px 0; font-size: 16px; color: #92400e;">
+                    📋 Formato esperado del PDF
+                </h3>
+                <p style="margin: 0 0 8px 0; font-size: 14px; color: var(--color-text);">
+                    El PDF debe ser un "Listado de Conceptos" generado por el sistema Humano con columnas:
+                </p>
+                <code style="display: block; background: white; padding: 12px; border-radius: 4px; font-family: monospace; font-size: 13px; margin-bottom: 12px;">
+                    CodEmpleado | Empleado | Valor
+                </code>
+                <p style="margin: 0; font-size: 13px; color: #92400e;">
+                    💡 <strong>Nota:</strong> Se pueden subir múltiples PDFs a la vez. Los empleados duplicados (mismo documento) serán omitidos automáticamente.
+                </p>
+            </div>
+
+            <!-- Formulario de carga PDF -->
+            <div style="display: flex; gap: 12px; align-items: end;">
+                <div class="form-group" style="flex: 1; margin-bottom: 0;">
+                    <label for="input-pdf-files">Seleccionar archivos PDF</label>
+                    <input 
+                        type="file" 
+                        id="input-pdf-files" 
+                        accept=".pdf,application/pdf"
+                        multiple
+                        style="padding: 10px; border: 2px dashed var(--color-border); border-radius: var(--radius); cursor: pointer;"
+                    >
+                </div>
+                <button 
+                    type="button" 
+                    id="btn-importar-pdf" 
+                    class="btn-agregar"
+                    style="white-space: nowrap;"
+                >
+                    📄 Importar PDF(s)
+                </button>
+            </div>
+
+            <!-- Resultado de la importación PDF -->
+            <div id="resultado-importacion-pdf" style="display: none; margin-top: 20px; padding: 16px; border-radius: var(--radius); background: #f0fdf4; border: 1px solid #22c55e;">
+                <h4 style="margin: 0 0 8px 0; color: #15803d;">✅ Importación desde PDF completada</h4>
+                <p id="resultado-importacion-pdf-texto" style="margin: 0 0 12px 0; font-size: 14px; color: var(--color-text);"></p>
+                <div id="resultado-importacion-pdf-detalles" style="font-size: 13px; color: var(--color-text-light);"></div>
+            </div>
+        </div>
+
         <!-- Sección: Lista de Usuarios -->
         <div class="admin-section">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px;">
@@ -478,6 +567,12 @@
                             <th>Documento</th>
                             <th>Nombre</th>
                             <th>Acciones</th>
+                        </tr>
+                        <tr class="filtros-row">
+                            <th><input type="text" id="filtro-userId" placeholder="Buscar..." class="filtro-input"></th>
+                            <th><input type="text" id="filtro-documento" placeholder="Buscar..." class="filtro-input"></th>
+                            <th><input type="text" id="filtro-nombre" placeholder="Buscar..." class="filtro-input"></th>
+                            <th></th>
                         </tr>
                     </thead>
                     <tbody id="tbody-usuarios">
@@ -533,6 +628,12 @@
                             <th>ID Usuario</th>
                             <th>Fecha y Hora</th>
                             <th>Ubicación</th>
+                        </tr>
+                        <tr class="filtros-row">
+                            <th><input type="text" id="filtro-asist-nombre" placeholder="Buscar..." class="filtro-input"></th>
+                            <th><input type="text" id="filtro-asist-userId" placeholder="Buscar..." class="filtro-input"></th>
+                            <th><input type="text" id="filtro-asist-fecha" placeholder="Buscar..." class="filtro-input"></th>
+                            <th><input type="text" id="filtro-asist-ubicacion" placeholder="Buscar..." class="filtro-input"></th>
                         </tr>
                     </thead>
                     <tbody id="tbody-asistencias">

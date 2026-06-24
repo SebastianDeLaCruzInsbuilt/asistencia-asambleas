@@ -476,27 +476,43 @@ async function eliminarUsuario(userId) {
 // ============================================================================
 
 /**
- * Renderiza la tabla de usuarios
+ * Renderiza la tabla de usuarios (con filtros aplicados)
  * Requirement: 4.3
  */
 function renderizarTablaUsuarios() {
     // Limpiar tabla
     tbodyUsuarios.innerHTML = '';
     
+    // Obtener valores de filtros
+    const filtroUserId = (document.getElementById('filtro-userId')?.value || '').toLowerCase().trim();
+    const filtroDocumento = (document.getElementById('filtro-documento')?.value || '').toLowerCase().trim();
+    const filtroNombre = (document.getElementById('filtro-nombre')?.value || '').toLowerCase().trim();
+    
+    // Filtrar usuarios
+    const usuariosFiltrados = appState.usuarios.filter(usuario => {
+        if (filtroUserId && !usuario.userId.toLowerCase().includes(filtroUserId)) return false;
+        if (filtroDocumento && !usuario.documento.toLowerCase().includes(filtroDocumento)) return false;
+        if (filtroNombre && !usuario.nombre.toLowerCase().includes(filtroNombre)) return false;
+        return true;
+    });
+    
     // Si no hay usuarios, mostrar mensaje
-    if (appState.usuarios.length === 0) {
+    if (usuariosFiltrados.length === 0) {
         const tr = document.createElement('tr');
+        const mensaje = appState.usuarios.length === 0 
+            ? 'No hay usuarios registrados. Agrega el primer usuario usando el formulario arriba.'
+            : 'No se encontraron usuarios con los filtros aplicados.';
         tr.innerHTML = `
             <td colspan="4" class="tabla-vacia">
-                No hay usuarios registrados. Agrega el primer usuario usando el formulario arriba.
+                ${mensaje}
             </td>
         `;
         tbodyUsuarios.appendChild(tr);
         return;
     }
     
-    // Renderizar cada usuario
-    appState.usuarios.forEach(usuario => {
+    // Renderizar cada usuario filtrado
+    usuariosFiltrados.forEach(usuario => {
         const tr = document.createElement('tr');
         tr.innerHTML = `
             <td>${escapeHtml(usuario.userId)}</td>
@@ -525,27 +541,60 @@ function renderizarTablaUsuarios() {
 }
 
 /**
- * Renderiza la tabla de asistencias
+ * Renderiza la tabla de asistencias (con filtros aplicados)
  * Requirement: 4.7
  */
 function renderizarTablaAsistencias() {
     // Limpiar tabla
     tbodyAsistencias.innerHTML = '';
     
+    // Obtener valores de filtros
+    const filtroNombre = (document.getElementById('filtro-asist-nombre')?.value || '').toLowerCase().trim();
+    const filtroUserId = (document.getElementById('filtro-asist-userId')?.value || '').toLowerCase().trim();
+    const filtroFecha = (document.getElementById('filtro-asist-fecha')?.value || '').toLowerCase().trim();
+    const filtroUbicacion = (document.getElementById('filtro-asist-ubicacion')?.value || '').toLowerCase().trim();
+    
+    // Filtrar asistencias
+    const asistenciasFiltradas = appState.asistencias.filter(asistencia => {
+        if (filtroNombre && !asistencia.nombre.toLowerCase().includes(filtroNombre)) return false;
+        if (filtroUserId && !asistencia.userId.toLowerCase().includes(filtroUserId)) return false;
+        
+        if (filtroFecha) {
+            const fecha = new Date(asistencia.fechaHora);
+            const fechaFormateada = fecha.toLocaleString('es-ES', {
+                year: 'numeric', month: '2-digit', day: '2-digit',
+                hour: '2-digit', minute: '2-digit', second: '2-digit'
+            }).toLowerCase();
+            if (!fechaFormateada.includes(filtroFecha)) return false;
+        }
+        
+        if (filtroUbicacion) {
+            const lat = asistencia.ubicacion.latitud.toFixed(6);
+            const lon = asistencia.ubicacion.longitud.toFixed(6);
+            const ubicacionStr = `${lat}, ${lon}`.toLowerCase();
+            if (!ubicacionStr.includes(filtroUbicacion)) return false;
+        }
+        
+        return true;
+    });
+    
     // Si no hay asistencias, mostrar mensaje
-    if (appState.asistencias.length === 0) {
+    if (asistenciasFiltradas.length === 0) {
         const tr = document.createElement('tr');
+        const mensaje = appState.asistencias.length === 0
+            ? 'No hay asistencias confirmadas todavía.'
+            : 'No se encontraron asistencias con los filtros aplicados.';
         tr.innerHTML = `
             <td colspan="4" class="tabla-vacia">
-                No hay asistencias confirmadas todavía.
+                ${mensaje}
             </td>
         `;
         tbodyAsistencias.appendChild(tr);
         return;
     }
     
-    // Renderizar cada asistencia
-    appState.asistencias.forEach(asistencia => {
+    // Renderizar cada asistencia filtrada
+    asistenciasFiltradas.forEach(asistencia => {
         const tr = document.createElement('tr');
         
         // Formatear fecha y hora
@@ -1084,6 +1133,128 @@ btnImportarCsv.addEventListener('click', async () => {
 });
 
 // ============================================================================
+// IMPORTACIÓN DESDE PDF DE NÓMINA
+// ============================================================================
+
+/**
+ * Importa usuarios desde archivos PDF de nómina
+ */
+const inputPdfFiles = document.getElementById('input-pdf-files');
+const btnImportarPdf = document.getElementById('btn-importar-pdf');
+const resultadoImportacionPdf = document.getElementById('resultado-importacion-pdf');
+const resultadoImportacionPdfTexto = document.getElementById('resultado-importacion-pdf-texto');
+const resultadoImportacionPdfDetalles = document.getElementById('resultado-importacion-pdf-detalles');
+
+btnImportarPdf.addEventListener('click', async () => {
+    // Verificar que se hayan seleccionado archivos
+    if (!inputPdfFiles.files || inputPdfFiles.files.length === 0) {
+        mostrarMensaje('warning', 'Por favor selecciona uno o más archivos PDF', 'Archivo requerido');
+        return;
+    }
+    
+    const archivos = inputPdfFiles.files;
+    
+    // Verificar extensiones
+    for (let i = 0; i < archivos.length; i++) {
+        if (!archivos[i].name.toLowerCase().endsWith('.pdf')) {
+            mostrarMensaje('error', `El archivo "${archivos[i].name}" no es un PDF válido`, 'Formato inválido');
+            return;
+        }
+    }
+    
+    // Deshabilitar botón
+    btnImportarPdf.disabled = true;
+    btnImportarPdf.textContent = 'Importando...';
+    
+    // Ocultar resultado anterior
+    resultadoImportacionPdf.style.display = 'none';
+    limpiarMensajes();
+    
+    try {
+        // Crear FormData con los archivos
+        const formData = new FormData();
+        for (let i = 0; i < archivos.length; i++) {
+            formData.append('archivos', archivos[i]);
+        }
+        
+        // Enviar al backend
+        const token = obtenerToken();
+        if (!token) {
+            redirigirALogin();
+            return;
+        }
+        
+        const response = await fetch(`${API_BASE_URL}/api/usuarios/importar-pdf`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`
+            },
+            body: formData
+        });
+        
+        // Manejar token expirado
+        if (response.status === 401) {
+            localStorage.removeItem('admin_token');
+            redirigirALogin();
+            return;
+        }
+        
+        const resultado = await response.json();
+        
+        if (!response.ok) {
+            throw new Error(resultado.mensaje || 'Error al importar PDFs');
+        }
+        
+        if (resultado.success) {
+            // Mostrar resumen
+            resultadoImportacionPdfTexto.textContent = resultado.mensaje;
+            
+            // Mostrar detalles por archivo
+            let detallesHtml = '';
+            if (resultado.detalles_por_archivo && resultado.detalles_por_archivo.length > 0) {
+                detallesHtml = '<ul style="margin: 0; padding-left: 20px;">';
+                resultado.detalles_por_archivo.forEach(detalle => {
+                    const icono = detalle.estado === 'exitoso' ? '✅' : '❌';
+                    detallesHtml += `<li>${icono} <strong>${detalle.archivo}</strong>: ${detalle.mensaje}`;
+                    if (detalle.empleados_encontrados) {
+                        detallesHtml += ` (${detalle.empleados_encontrados} encontrados en PDF)`;
+                    }
+                    detallesHtml += '</li>';
+                });
+                detallesHtml += '</ul>';
+            }
+            resultadoImportacionPdfDetalles.innerHTML = detallesHtml;
+            
+            resultadoImportacionPdf.style.display = 'block';
+            
+            // Mostrar mensaje de éxito
+            mostrarMensaje('exito', resultado.mensaje, 'Importación PDF completada');
+            
+            // Limpiar input
+            inputPdfFiles.value = '';
+            
+            // Recargar lista de usuarios
+            await cargarYMostrarUsuarios();
+            
+            // Ocultar resultado después de 15 segundos
+            setTimeout(() => {
+                resultadoImportacionPdf.style.display = 'none';
+            }, 15000);
+        } else {
+            mostrarMensaje('error', resultado.mensaje, 'Error en la importación');
+        }
+        
+    } catch (error) {
+        console.error('Error al importar PDF:', error);
+        mostrarMensaje('error', error.message || 'Error al importar los archivos PDF', 'Error');
+    } finally {
+        // Rehabilitar botón
+        btnImportarPdf.disabled = false;
+        btnImportarPdf.textContent = '📄 Importar PDF(s)';
+    }
+});
+
+// ============================================================================
 // REINICIO DE ASISTENCIAS
 // ============================================================================
 
@@ -1537,6 +1708,22 @@ document.addEventListener('DOMContentLoaded', async () => {
     
     // Cargar configuración de ubicación
     cargarConfiguracionUbicacion();
+    
+    // Event listeners para filtros de usuarios
+    ['filtro-userId', 'filtro-documento', 'filtro-nombre'].forEach(id => {
+        const input = document.getElementById(id);
+        if (input) {
+            input.addEventListener('input', () => renderizarTablaUsuarios());
+        }
+    });
+    
+    // Event listeners para filtros de asistencias
+    ['filtro-asist-nombre', 'filtro-asist-userId', 'filtro-asist-fecha', 'filtro-asist-ubicacion'].forEach(id => {
+        const input = document.getElementById(id);
+        if (input) {
+            input.addEventListener('input', () => renderizarTablaAsistencias());
+        }
+    });
     
     // Focus en el primer campo
     inputNuevoUserId.focus();

@@ -17,12 +17,17 @@ from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
 from functools import wraps
 
+# Directorio base del proyecto (un nivel arriba de backend/)
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+DATA_DIR = os.path.join(BASE_DIR, 'data')
+
+
 
 # ============================================================================
 # FUNCIONES DE CARGA Y PARSEO DE CSV (Sub-task 2.1)
 # ============================================================================
 
-def cargar_usuarios_csv(ruta_archivo: str = 'data/usuarios.csv') -> List[Dict[str, str]]:
+def cargar_usuarios_csv(ruta_archivo: str = os.path.join(DATA_DIR, 'usuarios.csv')) -> List[Dict[str, str]]:
     """
     Carga usuarios desde archivo CSV y retorna lista de diccionarios.
     
@@ -167,7 +172,7 @@ def calcular_distancia_haversine(
 # FUNCIONES DE CARGA DE CONFIGURACIÓN Y ASISTENCIAS (Sub-task 2.5)
 # ============================================================================
 
-def cargar_configuracion(ruta_archivo: str = 'data/configuracion.json') -> Dict:
+def cargar_configuracion(ruta_archivo: str = os.path.join(DATA_DIR, 'configuracion.json')) -> Dict:
     """
     Carga la configuración de la asamblea desde archivo JSON.
     
@@ -225,7 +230,7 @@ def cargar_configuracion(ruta_archivo: str = 'data/configuracion.json') -> Dict:
         raise ValueError(f"Error al cargar configuración: {str(e)}")
 
 
-def cargar_asistencias(ruta_archivo: str = 'data/asistencias.json') -> List[Dict]:
+def cargar_asistencias(ruta_archivo: str = os.path.join(DATA_DIR, 'asistencias.json')) -> List[Dict]:
     """
     Carga las asistencias confirmadas desde archivo JSON.
     
@@ -262,7 +267,7 @@ def cargar_asistencias(ruta_archivo: str = 'data/asistencias.json') -> List[Dict
 
 def guardar_asistencias(
     asistencias: List[Dict], 
-    ruta_archivo: str = 'data/asistencias.json'
+    ruta_archivo: str = os.path.join(DATA_DIR, 'asistencias.json')
 ) -> None:
     """
     Guarda las asistencias confirmadas en archivo JSON.
@@ -289,7 +294,7 @@ def guardar_asistencias(
 
 def guardar_usuarios_csv(
     usuarios: List[Dict[str, str]], 
-    ruta_archivo: str = 'data/usuarios.csv'
+    ruta_archivo: str = os.path.join(DATA_DIR, 'usuarios.csv')
 ) -> None:
     """
     Guarda la lista de usuarios en archivo CSV.
@@ -511,7 +516,7 @@ def iniciar_file_watcher():
     
     Requirements: 4.3, 4.6
     """
-    ruta_csv = 'data/usuarios.csv'
+    ruta_csv = os.path.join(DATA_DIR, 'usuarios.csv')
     
     # Verificar que el archivo existe
     if not os.path.exists(ruta_csv):
@@ -547,7 +552,7 @@ def iniciar_file_watcher():
 # ============================================================================
 
 # Crear aplicación Flask
-app = Flask(__name__, static_folder='../frontend', static_url_path='')
+app = Flask(__name__, static_folder=os.path.join(BASE_DIR, 'frontend'), static_url_path='')
 
 # Configurar CORS para permitir peticiones desde el frontend
 CORS(app)
@@ -560,11 +565,60 @@ file_observer = None  # Observer para file watcher
 admin_tokens = {}  # Tokens de sesión administrativa: {token: expiration_time}
 
 
+def asegurar_archivos_datos():
+    """
+    Crea archivos de datos si no existen (primera ejecucion o deploy limpio).
+    """
+    # Crear directorio data/ si no existe
+    if not os.path.exists(DATA_DIR):
+        os.makedirs(DATA_DIR)
+        print(f"  Creado directorio: {DATA_DIR}")
+    
+    # Configuracion por defecto
+    config_path = os.path.join(DATA_DIR, 'configuracion.json')
+    if not os.path.exists(config_path):
+        import json as _json
+        config_default = {
+            "ubicacionAsamblea": {"latitud": 4.3229422, "longitud": -74.3693629},
+            "radioPermitido": 100
+        }
+        with open(config_path, 'w', encoding='utf-8') as f:
+            _json.dump(config_default, f, indent=2, ensure_ascii=False)
+        print(f"  Creado {config_path} con valores por defecto")
+    
+    # Usuarios CSV vacio
+    usuarios_path = os.path.join(DATA_DIR, 'usuarios.csv')
+    if not os.path.exists(usuarios_path):
+        with open(usuarios_path, 'w', encoding='utf-8') as f:
+            f.write('userId,documento,nombre\n')
+        print(f"  Creado {usuarios_path} vacio")
+    
+    # Asistencias JSON vacio
+    asistencias_path = os.path.join(DATA_DIR, 'asistencias.json')
+    if not os.path.exists(asistencias_path):
+        import json as _json
+        with open(asistencias_path, 'w', encoding='utf-8') as f:
+            _json.dump([], f)
+        print(f"  Creado {asistencias_path} vacio")
+    
+    # Credenciales admin por defecto
+    creds_path = os.path.join(DATA_DIR, 'admin_credentials.json')
+    if not os.path.exists(creds_path):
+        import json as _json
+        creds_default = {"username": "admin", "password": "admin123"}
+        with open(creds_path, 'w', encoding='utf-8') as f:
+            _json.dump(creds_default, f, indent=2, ensure_ascii=False)
+        print(f"  Creado {creds_path} con credenciales por defecto")
+
+
 def inicializar_datos():
     """
     Carga inicial de datos al arrancar el servidor.
     """
     global usuarios_cache, configuracion_cache, asistencias_cache, file_observer
+    
+    # Asegurar que existan los archivos de datos
+    asegurar_archivos_datos()
     
     try:
         usuarios_cache = cargar_usuarios_csv()
@@ -628,7 +682,7 @@ def static_files(path):
 # FUNCIONES DE AUTENTICACIÓN ADMINISTRATIVA
 # ============================================================================
 
-def cargar_credenciales_admin(ruta_archivo: str = 'data/admin_credentials.json') -> Dict:
+def cargar_credenciales_admin(ruta_archivo: str = os.path.join(DATA_DIR, 'admin_credentials.json')) -> Dict:
     """
     Carga las credenciales del administrador desde archivo JSON.
     
@@ -924,7 +978,7 @@ def cambiar_password():
         credenciales['password'] = password_nueva
         
         # Guardar en archivo
-        with open('data/admin_credentials.json', 'w', encoding='utf-8') as archivo:
+        with open(os.path.join(DATA_DIR, 'admin_credentials.json'), 'w', encoding='utf-8') as archivo:
             json.dump(credenciales, archivo, indent=2, ensure_ascii=False)
         
         # Invalidar todos los tokens existentes (forzar re-login)
@@ -1240,7 +1294,7 @@ def actualizar_configuracion():
         }
         
         # Guardar en archivo
-        with open('data/configuracion.json', 'w', encoding='utf-8') as archivo:
+        with open(os.path.join(DATA_DIR, 'configuracion.json'), 'w', encoding='utf-8') as archivo:
             json.dump(nueva_configuracion, archivo, indent=2, ensure_ascii=False)
         
         # Actualizar caché

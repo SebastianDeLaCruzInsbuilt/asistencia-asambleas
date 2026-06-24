@@ -44,12 +44,11 @@ Thumbs.db
 
 # Deployment
 *.pem
-*.zip
 
-# Credentials (datos sensibles)
-asistencia-asamblea/data/admin_credentials.json
-asistencia-asamblea/data/usuarios.csv
-asistencia-asamblea/data/asistencias.json
+# Credentials y datos de runtime (sensibles)
+data/admin_credentials.json
+data/usuarios.csv
+data/asistencias.json
 
 # Logs y temporales
 *.log

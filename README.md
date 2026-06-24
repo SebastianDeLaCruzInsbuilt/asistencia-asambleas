@@ -1,196 +1,102 @@
-# � Workspace de Proyectos
+# 📍 Sistema de Confirmación de Asistencia a Asambleas
 
-Este workspace contiene dos proyectos independientes listos para desarrollo y deploy.
+Sistema web para confirmar asistencia a asambleas mediante validación de identidad y ubicación geográfica.
 
----
+> **Nota:** Este workspace contiene dos proyectos. Ver [WORKSPACE_STRUCTURE.md](WORKSPACE_STRUCTURE.md) para más detalles.
 
-## 📦 Proyectos
+## 🚀 Deploy Rápido en Railway
 
-### 1️⃣ Sistema de Asistencia a Asambleas
-**Carpeta:** `asistencia-asamblea/`  
-**Tecnología:** Python + Flask  
-**Descripción:** Sistema web para confirmar asistencia mediante validación de identidad y geolocalización
+[![Deploy on Railway](https://railway.app/button.svg)](https://railway.app/new/template)
 
-[📖 Ver documentación completa →](asistencia-asamblea/README.md)
+## ✨ Características
+
+- ✅ Validación de identidad por documento
+- ✅ Verificación de ubicación geográfica (GPS)
+- ✅ Panel administrativo con autenticación JWT
+- ✅ Carga masiva de usuarios desde CSV
+- ✅ Configuración de ubicación de asamblea
+- ✅ Gestión de asistencias en tiempo real
+- ✅ HTTPS incluido
+
+## 🛠️ Tecnologías
+
+- **Backend:** Python 3.11 + Flask
+- **Frontend:** HTML5 + JavaScript vanilla
+- **Almacenamiento:** JSON (fácil migración a PostgreSQL)
+- **Deploy:** Railway.app
+
+## 📦 Instalación Local
 
 ```bash
+# Clonar repositorio
+git clone https://github.com/TU_USUARIO/asistencia-asamblea.git
 cd asistencia-asamblea
+
+# Instalar dependencias
 pip install -r requirements.txt
+
+# Ejecutar aplicación
 python backend/app.py
 ```
 
----
+## 🌐 Deploy en Railway
 
-### 2️⃣ Analizador de Código .NET con GenAI
-**Carpeta:** `dotnet-code-analyzer/`  
-**Tecnología:** Python + AWS Bedrock + Flask  
-**Descripción:** Agente GenAI que analiza código C# y genera reportes de negocio en Excel
+1. Haz fork de este repositorio
+2. Ve a [railway.app](https://railway.app)
+3. Conecta tu cuenta de GitHub
+4. Selecciona este repositorio
+5. ¡Listo! Railway despliega automáticamente
 
-[📖 Ver documentación completa →](dotnet-code-analyzer/README.md)
+## 🔐 Credenciales por Defecto
 
-```bash
-cd dotnet-code-analyzer
-pip install -r requirements.txt
-python start_server.py
-```
+- **Usuario:** admin
+- **Contraseña:** admin123
 
----
+⚠️ **IMPORTANTE:** Cambia la contraseña después del primer login
 
-## 📂 Estructura del Workspace
+## 📝 Configuración
 
-```
-workspace/
-│
-├── 📁 asistencia-asamblea/      → Proyecto completo de asistencia
-│   ├── backend/                 → Backend Flask
-│   ├── frontend/                → Frontend web
-│   ├── data/                    → Base de datos
-│   ├── config.py                → Configuración
-│   ├── requirements.txt         → Dependencias
-│   ├── start.bat / .sh          → Scripts de inicio
-│   └── README.md                → Documentación
-│
-├── � dotnet-code-analyzer/     → Proyecto completo del analyzer
-│   ├── src/                     → Código fuente
-│   ├── frontend/                → Interfaz web
-│   ├── tests/                   → Pruebas
-│   ├── requirements.txt         → Dependencias
-│   ├── start_server.py          → Script de inicio
-│   └── README.md                → Documentación
-│
-├── 📁 .kiro/                    → Configuración Kiro
-│   └── specs/                   → Especificaciones
-│
-└── 📚 Documentación/
-    ├── README.md                → Este archivo
-    ├── QUICK_START.md           → Comandos rápidos
-    └── WORKSPACE_STRUCTURE.md   → Estructura detallada
-```
+La aplicación se configura automáticamente. Para personalizar:
 
----
+1. **Ubicación de la asamblea:** Panel Admin → Configuración de Ubicación
+2. **Usuarios autorizados:** Panel Admin → Agregar Usuario o Carga CSV
+3. **Radio permitido:** Panel Admin → Configuración de Ubicación
 
-## 🚀 Inicio Rápido
+## 🎯 Uso
 
-### Proyecto Asistencia
-```bash
-cd asistencia-asamblea
-pip install -r requirements.txt
-python backend/app.py
-# Acceder a: http://localhost:5000
-```
+### Para Usuarios
+1. Accede a la URL de tu aplicación
+2. Ingresa tu documento de identidad
+3. Permite acceso a tu ubicación
+4. Confirma tu asistencia
 
-### Proyecto Analyzer
-```bash
-cd dotnet-code-analyzer
-pip install -r requirements.txt
-aws configure  # Configurar AWS si es necesario
-python start_server.py
-# Acceder a: http://localhost:5000
-```
+### Para Administradores
+1. Accede a `/admin.html`
+2. Inicia sesión con tus credenciales
+3. Gestiona usuarios y visualiza asistencias
+
+## 📊 Rendimiento
+
+- Soporta hasta 800-1000 usuarios concurrentes
+- Escalado automático disponible en Railway
+- Optimizado con Gunicorn (4 workers)
+
+## 🔒 Seguridad
+
+- Autenticación JWT para administradores
+- Tokens con expiración de 8 horas
+- Validación de coordenadas geográficas
+- HTTPS obligatorio en producción
+
+## 📄 Licencia
+
+MIT License
 
 ---
 
-## 📊 Comparación de Proyectos
+## 📚 Documentación Adicional
 
-| Aspecto | Asistencia | Analyzer |
-|---------|-----------|----------|
-| **Lenguaje** | Python 3.11 | Python 3.9+ |
-| **Framework** | Flask | Flask + AWS Strands |
-| **Frontend** | HTML/CSS/JS | HTML/CSS/JS |
-| **Base de Datos** | JSON/CSV | N/A |
-| **Cloud** | Railway | AWS Bedrock |
-| **Puerto** | 5000 | 5000 |
-| **Deploy** | Railway.app | AWS |
-
----
-
-## 🔧 Requisitos
-
-### Ambos Proyectos
-- Python 3.9 o superior
-- pip (gestor de paquetes)
-- Git
-
-### Proyecto Asistencia
-- Ningún requisito adicional
-
-### Proyecto Analyzer
-- AWS CLI configurado
-- Cuenta AWS con acceso a Bedrock
-- Credenciales AWS configuradas
-
----
-
-## 📚 Documentación
-
-| Documento | Descripción |
-|-----------|-------------|
-| [asistencia-asamblea/README.md](asistencia-asamblea/README.md) | Documentación completa del sistema de asistencia |
-| [dotnet-code-analyzer/README.md](dotnet-code-analyzer/README.md) | Documentación completa del analyzer |
-| [QUICK_START.md](QUICK_START.md) | Comandos esenciales para ambos proyectos |
-| [WORKSPACE_STRUCTURE.md](WORKSPACE_STRUCTURE.md) | Estructura detallada del workspace |
-
----
-
-## 🎯 Características
-
-### ✅ Workspace Organizado
-- Dos proyectos completamente independientes
-- Cada proyecto en su propia carpeta
-- Documentación separada y completa
-- Fácil de navegar y mantener
-
-### ✅ Listo para Desarrollo
-- Configuración mínima requerida
-- Scripts de inicio incluidos
-- Dependencias claramente definidas
-- Pruebas disponibles
-
-### ✅ Listo para Deploy
-- Ambos proyectos deployables
-- Documentación de deploy incluida
-- Configuración de producción lista
-
----
-
-## 🔄 Flujo de Trabajo
-
-1. **Elegir proyecto:** Navega a la carpeta del proyecto
-2. **Instalar dependencias:** `pip install -r requirements.txt`
-3. **Configurar (si es necesario):** Ver README del proyecto
-4. **Iniciar:** Ejecutar script de inicio
-5. **Desarrollar:** Hacer cambios
-6. **Probar:** Ejecutar tests
-7. **Deploy:** Seguir guía de deploy
-
----
-
-## 🆘 Soporte
-
-- **Problemas con Asistencia:** Ver [asistencia-asamblea/README.md](asistencia-asamblea/README.md)
-- **Problemas con Analyzer:** Ver [dotnet-code-analyzer/README.md](dotnet-code-analyzer/README.md)
-- **Problemas generales:** Revisar documentación del workspace
-
----
-
-## 📝 Notas
-
-- Cada proyecto tiene su propio `requirements.txt`
-- Los proyectos son completamente independientes
-- Pueden ejecutarse simultáneamente en diferentes puertos
-- Las especificaciones Kiro están en `.kiro/specs/`
-
----
-
-## 📊 Estado
-
-| Proyecto | Estado | Tests | Deploy |
-|----------|--------|-------|--------|
-| Asistencia | ✅ Activo | ✅ Disponibles | ✅ Railway |
-| Analyzer | ✅ Activo | ✅ Disponibles | ✅ AWS |
-
----
-
-**Última actualización:** 27 de enero de 2026  
-**Proyectos activos:** 2  
-**Estado del workspace:** ✅ Organizado y listo
+- [Estructura del Workspace](WORKSPACE_STRUCTURE.md) - Organización de ambos proyectos
+- [Guía de Inicio Rápido](QUICK_START.md) - Comandos esenciales
+- [Resumen de Limpieza](CLEANUP_SUMMARY.md) - Cambios recientes en el workspace
+- [Analizador .NET](dotnet-code-analyzer/README.md) - Documentación del segundo proyecto

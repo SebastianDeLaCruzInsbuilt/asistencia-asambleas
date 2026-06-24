@@ -1,4 +1,4 @@
-"""
+﻿"""
 Sistema de Confirmación de Asistencia a Asambleas
 Backend Flask Application
 """

@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Sistema de Confirmación de Asistencia a Asambleas
  * Interfaz Administrativa - JavaScript
  * 
@@ -44,8 +44,9 @@ async function verificarAutenticacion() {
         
         return true;
     } catch (error) {
-        console.error('Error al verificar autenticación:', error);
-        return false;
+        console.error('Error al verificar autenticacion:', error);
+        // Error de red - no redirigir, el token puede ser valido
+        return true;
     }
 }
 
